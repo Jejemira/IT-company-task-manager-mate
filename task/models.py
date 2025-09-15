@@ -28,19 +28,12 @@ class Worker(AbstractUser):
 
 
 class Task(models.Model):
-    class Priority(models.TextChoices):
-        URGENT = "URGENT"
-        HIGH = "HIGH"
-        MEDIUM = "MEDIUM"
-        LOW = "LOW"
-
-        PRIORITY_CHOICES = [
-            (URGENT, "Urgent"),
-            (HIGH, "High"),
-            (MEDIUM, "Medium"),
-            (LOW, "Low")
-        ]
-
+    PRIORITY_CHOICES = (
+        ("URGENT", "Urgent"),
+        ("HIGH", "High"),
+        ("MEDIUM", "Medium"),
+        ("LOW", "Low")
+    )
 
     name = models.CharField(max_length=255)
     description = models.TextField(
@@ -51,8 +44,8 @@ class Task(models.Model):
     is_completed = models.BooleanField()
     priority = models.CharField(
         max_length=10,
-        choices=Priority.PRIORITY_CHOICES,
-        default=Priority.MEDIUM
+        choices=PRIORITY_CHOICES,
+        default="Medium"
     )
     task_type = models.ForeignKey(
         TaskType,
