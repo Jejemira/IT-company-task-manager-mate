@@ -8,7 +8,10 @@ from django.views import generic
 from task.forms import (TaskTypeNameSearchForm,
                         PositionNameSearchForm,
                         TaskDeadlineSearchForm,
-                        TaskForm,)
+                        TaskForm,
+                        WorkerUsernameSearchForm,
+                        WorkerCreationForm,
+                        WorkerPositionUpdateForm,)
 from task.models import (Worker,
                          Task,
                          TaskType,
@@ -47,13 +50,16 @@ class TaskTypeListView(
 ):
     model = TaskType
     context_object_name = "task_type_list"
-    template_name = "task/task_type_list.html"
+    template_name = "task/tasktype_list.html"
     paginate_by = 5
 
     def get_context_data(
         self, *, object_list=None, **kwargs
     ):
-        context = super(TaskTypeListView, self).get_context_data(**kwargs)
+        context = super(
+            TaskTypeListView,
+            self
+        ).get_context_data(**kwargs)
         name = self.request.GET.get("name", "")
         context["search_form"] = TaskTypeNameSearchForm(
             initial={"name": name}
@@ -109,7 +115,10 @@ class PositionListView(
     def get_context_data(
         self, *, object_list=None, **kwargs
     ):
-        context = super(PositionListView, self).get_context_data(**kwargs)
+        context = super(
+            PositionListView,
+            self
+        ).get_context_data(**kwargs)
         name = self.request.GET.get("name", "")
         context["search_form"] = PositionNameSearchForm(
             initial={"name": name}
@@ -159,12 +168,15 @@ class TaskListView(
 ):
     model = Task
     paginate_by = 5
-    queryset = Task.objects.select_related("priority")
+    queryset = Task.objects.select_related("task_type")
 
     def get_context_data(
         self, *, object_list=None, **kwargs
     ):
-        context = super(TaskListView, self).get_context_data(**kwargs)
+        context = super(
+            TaskListView,
+            self
+        ).get_context_data(**kwargs)
         deadline = self.request.GET.get("deadline", "")
         context["search_form"] = TaskDeadlineSearchForm(
             initial={"deadline": deadline}
@@ -172,7 +184,7 @@ class TaskListView(
         return context
 
     def get_queryset(self):
-        queryset = Task.objects.select_related("deadline")
+        queryset = Task.objects.select_related("task_type")
         form = TaskDeadlineSearchForm(self.request.GET)
 
         if form.is_valid():
@@ -215,12 +227,82 @@ class TaskDeleteView(
     success_url = reverse_lazy("task:task-list")
 
 
-@login_required
+class WorkerListView(
+    LoginRequiredMixin,
+    generic.ListView
+):
+    model = Worker
+    paginate_by = 5
+
+    def get_context_data(
+        self, *, object_list=None, **kwargs
+    ):
+        context = super(
+            WorkerListView,
+            self
+        ).get_context_data(**kwargs)
+
+        username = self.request.GET.get("username", "")
+
+        context["search_form"] = WorkerUsernameSearchForm(
+            initial={"username": username}
+        )
+        return context
+
+    def get_queryset(self):
+        queryset = Worker.objects.all()
+        form = WorkerUsernameSearchForm(self.request.GET)
+
+        if form.is_valid():
+            return queryset.filter(
+                username__icontains=form.cleaned_data["username"]
+            )
+        return queryset
+
+
+class WorkerDetailView(
+    LoginRequiredMixin,
+    generic.DetailView
+):
+    model = Worker
+    queryset = Worker.objects.all().select_related(
+        "position"
+    ).prefetch_related(
+        "tasks__task_type"
+    )
+
+
+class WorkerCreateView(
+    LoginRequiredMixin,
+    generic.CreateView
+):
+    model = Worker
+    form_class = WorkerCreationForm
+
+
+class WorkerPositionUpdateView(
+    LoginRequiredMixin,
+    generic.UpdateView
+):
+    model = Worker
+    form_class = WorkerPositionUpdateForm
+    success_url = reverse_lazy("task:worker-list")
+
+
+class WorkerDeleteView(
+    LoginRequiredMixin,
+    generic.DeleteView
+):
+    model = Worker
+    success_url = reverse_lazy("")
+
+
+# @login_required
 def toggle_assign_to_task(request, pk):
     worker = Worker.objects.get(id=request.user.id)
     if (
         Task.objects.get(id=pk) in worker.tasks.all()
-    ):  # probably could check if car exists
+    ):  # probably could check if task exists
         worker.tasks.remove(pk)
     else:
         worker.tasks.add(pk)
