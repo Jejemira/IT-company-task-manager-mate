@@ -2,8 +2,7 @@
 
 {% block content %}
   <h1>
-    {{ task.deadline }}
-    {{ task.is_completed }}
+    {{ task.name }}
     <a href="{% url 'task:task-delete' pk=task.id %}" class="btn btn-danger link-to-page">
       Delete
     </a>
@@ -12,12 +11,12 @@
       Update
     </a>
   </h1>
-  <p>
-    name: ({{ task.name }}.
-    description: {{ task.description }})
-    priority: {{ task.priority }}
-    task type: {{ task.task_type.name }}
-  </p>
+  <p><strong>Project:</strong> {{ task.project.name }}</p>
+  <p><strong>Description:</strong> {{ task.description }}</p>
+  <p><strong>Deadline:</strong> {{ task.deadline }}</p>
+  <p><strong>Priority:</strong> {{ task.priority }}</p>
+  <p><strong>Completed:</strong> {{ task.is_completed }}</p>
+  <p><strong>Task type:</strong> {{ task.task_type.name }}</p>
   <h1>
     Worker
 
@@ -32,10 +31,13 @@
     {% endif %}
 
   </h1>
-  <hr>
   <ul>
-    {% for worker in task.worker.all %}
-      <li>{{ worker.position.name }} ({{ worker.first_name }} {{ worker.last_name }})</li>
+    {% for worker in task.assignees.all %}
+      <li>
+        {{ worker.first_name }} {{ worker.last_name }} ({{ worker.position }})
+      </li>
+    {% empty %}
+      <li><em>No assignees for this task.</em></li>
     {% endfor %}
   </ul>
 {% endblock %}

@@ -15,14 +15,56 @@
   </form>
 
   {% if task_list %}
-    <ul>
+    <table class="table">
+      <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Tag</th>
+        <th>Deadline</th>
+        <th>Assignees</th>
+        <th>Update</th>
+        <th>Delete</th>
+      </tr>
+
       {% for task in task_list %}
-        <li>
-          <a href="{% url "task:task-detail" pk=task.id %} ">{{ task.id }}</a>
-          {{ task.deadline }} ({{ task.task_type.name }})
-        </li>
+        <tr>
+          <td>
+            <a href="{% url "task:task-detail" pk=task.id %} ">{{ task.id }}</a>
+          </td>
+          <td>
+            {{ task.name }}
+          </td>
+          <td>
+            {% for tag in task.tag.all %}
+              {{ tag.name }}{% if not forloop.last %}, {% endif %}
+            {% empty %}
+              <em>No tag</em>
+            {% endfor %}
+          </td>
+          <td>
+            {{ task.deadline }}
+          </td>
+          <td>
+            {% for worker in task.assignees.all %}
+              {{ worker.first_name }} {{ worker.last_name }}{% if not forloop.last %}, {% endif %}
+            {% empty %}
+              <em>No assignees</em>
+            {% endfor %}
+          </td>
+          <td>
+            <a href="{% url 'task:task-update' pk=task.id %}">
+              Update
+            </a>
+          </td>
+          <td>
+            <a style="color: red"
+              href="{% url 'task:task-delete' pk=task.id %}">
+              Delete
+            </a>
+          </td>
+        </tr>
       {% endfor %}
-    </ul>
+    </table>
   {% else %}
     <p>No more tasks!</p>
   {% endif %}

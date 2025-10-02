@@ -8,7 +8,7 @@
     </a>
 
     <a href="{% url 'task:worker-update' pk=worker.id %}" class="btn btn-secondary link-to-page">
-      Update Position
+      Update Worker
     </a>
   </h1>
 
@@ -18,15 +18,47 @@
   <p><strong>Is staff:</strong> {{ worker.is_staff }}</p>
 
   <div class="ml-3">
-    <h4>Task</h4>
+    <h4>Tasks</h4>
 
     {% for task in worker.tasks.all %}
+      {% if task.is_completed %}
+        <h3>Completed tasks</h3>
+        <table class="table">
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Tag</th>
+            <th>Task type</th>
+          </tr>
+          <tr>
+            <td>{{ task.id }}</td>
+            <td>
+              <a href="{% url "task:task-detail" pk=task.id %}">{{ task.name }}</a>
+            </td>
+            <td>{{ task.tag.name }}</td>
+            <td>{{ task.task_type }}</td>
+          </tr>
+        </table>
+      {% else %}
+        <h3>Unfulfilled tasks</h3>
+        <table class="table">
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Tag</th>
+            <th>Task type</th>
+          </tr>
+          <tr>
+            <td>{{ task.id }}</td>
+            <td>
+              <a href="{% url "task:task-detail" pk=task.id %}">{{ task.name }}</a>
+            </td>
+            <td>{{ task.tag.name }}</td>
+            <td>{{ task.task_type }}</td>
+          </tr>
+        </table>
+      {% endif %}
         <hr>
-        <p><strong>Name:</strong> {{ task.name }}</p>
-        <p><strong>Description:</strong> {{ task.description }}</p>
-        <p><strong>Is completed:</strong> {{ task.is_completed }}</p>
-        <p class="text-muted"><strong>Id:</strong> {{task.id}}</p>
-
     {% empty %}
       <p>No tasks!</p>
     {% endfor %}
