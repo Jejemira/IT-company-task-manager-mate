@@ -6,3 +6,10 @@ body {
     float: right;
     margin: 0 2px 0 2px;
 }
+
+.centered {
+  width: 300px;
+  margin: 0 auto;
+  background: lightblue;
+  text-align: center;
+}
