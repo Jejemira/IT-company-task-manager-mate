@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% load crispy_forms_filters %}
+
+{% block content %}
+    <h1>
+      Project List
+      <a href="{% url 'task:project-create' %}" class="btn btn-primary link-to-page">
+        Create
+      </a>
+    </h1>
+
+  <form method="get" action="" class="form-inline">
+    {{ search_form|crispy }}
+    <input type="submit" value="🙊🙊" class="btn btn-secondary">
+  </form>
+
+    {% if project_list %}
+    <table class="table">
+      <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Team</th>
+        <th>Manager</th>
+      </tr>
+    {% for project in project_list %}
+      <tr>
+        <td>
+            <a href="{% url "task:project-detail" pk=project.id %} ">{{ project.id }}</a>
+        </td>
+        <td>{{ project.name }}</td>
+        <td>{{ project.teams.name }}</td>
+        <td>{{ project.manager.last_name }}</td>
+      </tr>
+    {% endfor %}
+
+    </table>
+    {% else %}
+      <p>There are no project in the service.</p>
+    {% endif %}
+{% endblock %}
