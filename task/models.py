@@ -7,14 +7,21 @@ from django.urls import reverse
 class TaskType(models.Model):
     name = models.CharField(max_length=255)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.name
 
 
 class Position(models.Model):
     name = models.CharField(max_length=255)
 
-    def __str__(self):
+    def __str__(self) -> str:
+        return self.name
+
+
+class Tag(models.Model):
+    name = models.CharField(max_length=255)
+
+    def __str__(self) -> str:
         return self.name
 
 
@@ -28,7 +35,7 @@ class Worker(AbstractUser):
         verbose_name = "worker"
         verbose_name_plural = "workers"
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self.position} - {self.first_name} {self.last_name}"
 
     def get_absolute_url(self):
@@ -36,6 +43,45 @@ class Worker(AbstractUser):
             "task:worker-detail",
             kwargs={"pk": self.pk}
         )
+
+
+class Team(models.Model):
+    name = models.CharField(max_length=255)
+    members = models.ManyToManyField(
+        Worker,
+        related_name="teams"
+    )
+
+    def __str__(self) -> str:
+        return self.name
+
+    @property
+    def members_count(self) -> int:
+        return self.members.count()
+
+
+class Project(models.Model):
+    name = models.CharField(max_length=255)
+    description = models.TextField(
+        blank=True,
+        null=True
+    )
+    start_date = models.DateField()
+    end_date = models.DateField(blank=True, null=True)
+    teams = models.ManyToManyField(
+        Team,
+        related_name="projects"
+    )
+    manager = models.ForeignKey(
+        Worker,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="manager_projects"
+    )
+
+    def __str__(self) -> str:
+        return self.name
 
 
 class Task(models.Model):
@@ -66,9 +112,21 @@ class Task(models.Model):
         Worker,
         related_name="tasks"
     )
+    tag = models.ManyToManyField(
+        Tag,
+        related_name="tasks"
+    )
+    project = models.ForeignKey(
+        Project,
+        on_delete=models.CASCADE,
+        related_name="tasks",
+        null=True,
+        blank=True
+    )
 
-    def __str__(self):
+    def __str__(self) -> str:
         return (f"Task: \"{self.name}\""
+                f"Project: {self.project.name if self.project else 'No project'}"
                 f"Is completed: {self.is_completed}"
                 f"Priority: {self.priority}"
                 f"Deadline: {self.deadline}"
